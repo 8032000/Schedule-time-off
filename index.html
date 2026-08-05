@@ -698,36 +698,37 @@
     <!-- Firebase Cloud Sync Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-       const appId = 'pchome-roster-app';
-const firebaseConfig = {
-  apiKey: "AIzaSyAST35xy8caDPmXU_Y3tKWMY-DSwJ5YPdM",
-  authDomain: "schedule-time-off.firebaseapp.com",
-  projectId: "schedule-time-off",
-  storageBucket: "schedule-time-off.firebasestorage.app",
-  messagingSenderId: "343728866805",
-  appId: "1:343728866805:web:c2cb0d1b250f30ee6b8cbc",
-  measurementId: "G-JZZRH50S1C"
-};
+        // 修改1: 改名為 myRosterAppId，避免與 Firebase SDK 原生的 appId 衝突
+        const myRosterAppId = 'pchome-roster-app';
+
+        // 修改2: 直接帶入 Firebase 金鑰物件，解決 GitHub Pages 部署時 null 報錯問題
+        const firebaseConfig = {
+            apiKey: "AIzaSyAST35xy8caDPmXU_Y3tKWMY-DSwJ5YPdM",
+            authDomain: "schedule-time-off.firebaseapp.com",
+            projectId: "schedule-time-off",
+            storageBucket: "schedule-time-off.firebasestorage.app",
+            messagingSenderId: "343728866805",
+            appId: "1:343728866805:web:c2cb0d1b250f30ee6b8cbc",
+            measurementId: "G-JZZRH50S1C"
+        };
+
         let db = null;
         let isCloudConnected = false;
 
         async function initCloudSync() {
-            if (!firebaseConfig) return;
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 const auth = getAuth(app);
 
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // 進行匿名登入
+                await signInAnonymously(auth);
 
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'roster_state');
+                // 指向正確的 Document 路徑
+                const docRef = doc(db, 'artifacts', myRosterAppId, 'public', 'data', 'roster_state');
                 
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
@@ -799,9 +800,9 @@ const firebaseConfig = {
                 maxPerWeek: 2, monthRest: 8, monthReg: 4, monthNat: 0, maxConsecutiveWorkDays: 6, allowedDeficit: 2, customText: '' 
             },
             weeklyMaxLeaves: [2, 2, 2, 2, 2], 
-            useDeformedHours: false,           
+            useDeformedHours: false,            
             roleSettings: 'A區,B區,巡場', 
-            dailyRoles: {},               
+            dailyRoles: {},                
             logs: [],
             showOnlyNonCompliant: false 
         };
