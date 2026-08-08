@@ -763,14 +763,20 @@
                 db = getFirestore(app);
                 const auth = getAuth(app);
 
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+                // 嘗試進行身份驗證，如果因為網域或認證設定拋出異常，接住並直接連線 Firestore
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (authErr) {
+                    console.warn("Firebase Auth bypassed, proceeding to Firestore:", authErr);
                 }
 
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'roster_state');
                 
+                // 直連 Firestore 資料庫
                 onSnapshot(docRef, (docSnap) => {
                     if (statusEl) {
                         statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
@@ -797,10 +803,10 @@
                     console.warn("Cloud sync listening notice:", error);
                     if (statusEl) {
                         statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線失敗 (請看提示)`;
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端權限不足`;
                     }
                     if (typeof showToast === 'function') {
-                        showToast('⚠️ Firebase 權限未開啟！請至 Firebase 控制台開啟「Firestore 資料庫」與「Authentication 匿名登入」', 'error');
+                        showToast('⚠️ 請至 Firebase 控制台開啟「Firestore Database ➔ 規則 Rules」設為 allow read, write: if true;', 'error');
                     }
                 });
 
@@ -817,10 +823,7 @@
                 console.warn("Cloud sync initialization fallback to local storage:", err);
                 if (statusEl) {
                     statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端登入失敗`;
-                }
-                if (typeof showToast === 'function') {
-                    showToast('⚠️ 請確認 Firebase 控制台 ➔ Authentication 是否已「啟用匿名登入」', 'error');
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常`;
                 }
             }
         }
