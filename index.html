@@ -551,8 +551,8 @@
                             💡 若您希望同仁在各自手機劃休後，主管電腦或其他裝置能<b>即時同步更新班表（資料永遠不遺失）</b>，請在免費的 Google Firebase 申請專案，並貼上專案設定 Json 內容：
                         </p>
                         <div>
-                            <label class="block text-xs font-bold text-emerald-900 mb-1">貼上 Firebase Config (JSON 格式)</label>
-                            <textarea id="firebase-config-input" rows="4" class="w-full rounded-lg border-emerald-300 border p-3 text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none bg-white" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}'></textarea>
+                            <label class="block text-xs font-bold text-emerald-900 mb-1">貼上 Firebase Config (JSON 格式 或 JS 程式碼片段)</label>
+                            <textarea id="firebase-config-input" rows="5" class="w-full rounded-lg border-emerald-300 border p-3 text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none bg-white" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}'></textarea>
                         </div>
                         <div class="flex justify-between items-center pt-2">
                             <span class="text-[11px] text-slate-500">※ 貼上後點擊儲存並重新整理網頁，即可開啟全裝置即時連線！</span>
@@ -772,21 +772,36 @@
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'roster_state');
                 
                 onSnapshot(docRef, (docSnap) => {
+                    if (statusEl) {
+                        statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>🟢 雲端即時連線中`;
+                    }
+                    if (settingsBadge) {
+                        settingsBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                        settingsBadge.innerText = "🟢 已成功串接雲端";
+                    }
+
                     if (docSnap.exists()) {
                         const cloudData = docSnap.data();
                         window.applyStateFromCloud(cloudData);
-                        
-                        if (statusEl) {
-                            statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-                            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>🟢 雲端即時連線中`;
-                        }
-                        if (settingsBadge) {
-                            settingsBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-                            settingsBadge.innerText = "🟢 已成功串接雲端";
+                    } else {
+                        const localSaved = localStorage.getItem('MonthlyRosterSystemData');
+                        if (localSaved) {
+                            try {
+                                const localData = JSON.parse(localSaved);
+                                setDoc(docRef, localData, { merge: true });
+                            } catch(e) {}
                         }
                     }
                 }, (error) => {
                     console.warn("Cloud sync listening notice:", error);
+                    if (statusEl) {
+                        statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線失敗 (請看提示)`;
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast('⚠️ Firebase 權限未開啟！請至 Firebase 控制台開啟「Firestore 資料庫」與「Authentication 匿名登入」', 'error');
+                    }
                 });
 
                 window.cloudSave = async function(data) {
@@ -801,8 +816,11 @@
             } catch (err) {
                 console.warn("Cloud sync initialization fallback to local storage:", err);
                 if (statusEl) {
-                    statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>🟡 本機儲存 (離線模式)`;
+                    statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端登入失敗`;
+                }
+                if (typeof showToast === 'function') {
+                    showToast('⚠️ 請確認 Firebase 控制台 ➔ Authentication 是否已「啟用匿名登入」', 'error');
                 }
             }
         }
@@ -895,7 +913,7 @@
         };
 
         window.saveFirebaseConfig = function() {
-            const val = document.getElementById('firebase-config-input').value.trim();
+            let val = document.getElementById('firebase-config-input').value.trim();
             if (!val) {
                 localStorage.removeItem('custom_firebase_config');
                 showToast('已清除 Firebase 設定，回復預設單機模式', 'info');
@@ -903,12 +921,43 @@
                 return;
             }
             try {
-                JSON.parse(val);
-                localStorage.setItem('custom_firebase_config', val);
+                let parsedObj = null;
+                
+                if (val.includes('{') && val.includes('}')) {
+                    val = val.substring(val.indexOf('{'), val.lastIndexOf('}') + 1);
+                }
+
+                try {
+                    parsedObj = JSON.parse(val);
+                } catch (e) {
+                    const apiKeyMatch = val.match(/apiKey\s*:\s*["']([^"']+)["']/);
+                    const authDomainMatch = val.match(/authDomain\s*:\s*["']([^"']+)["']/);
+                    const projectIdMatch = val.match(/projectId\s*:\s*["']([^"']+)["']/);
+                    const storageBucketMatch = val.match(/storageBucket\s*:\s*["']([^"']+)["']/);
+                    const messagingSenderIdMatch = val.match(/messagingSenderId\s*:\s*["']([^"']+)["']/);
+                    const appIdMatch = val.match(/appId\s*:\s*["']([^"']+)["']/);
+
+                    if (projectIdMatch && appIdMatch) {
+                        parsedObj = {
+                            apiKey: apiKeyMatch ? apiKeyMatch[1] : "",
+                            authDomain: authDomainMatch ? authDomainMatch[1] : "",
+                            projectId: projectIdMatch ? projectIdMatch[1] : "",
+                            storageBucket: storageBucketMatch ? storageBucketMatch[1] : "",
+                            messagingSenderId: messagingSenderIdMatch ? messagingSenderIdMatch[1] : "",
+                            appId: appIdMatch ? appIdMatch[1] : ""
+                        };
+                    }
+                }
+
+                if (!parsedObj || !parsedObj.projectId || !parsedObj.appId) {
+                    throw new Error("Invalid config format");
+                }
+
+                localStorage.setItem('custom_firebase_config', JSON.stringify(parsedObj));
                 showToast('Firebase 金鑰設定成功！即將重新整理啟用連線...', 'success');
                 setTimeout(() => location.reload(), 1200);
             } catch(e) {
-                showToast('貼上的格式不正確，請確認為有效的 JSON 結構', 'error');
+                showToast('貼上的格式不完整或不正確，請確保複製包含完整的 { ... } 內容！', 'error');
             }
         };
 
