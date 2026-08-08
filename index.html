@@ -763,7 +763,7 @@
                 db = getFirestore(app);
                 const auth = getAuth(app);
 
-                // 嘗試進行身份驗證，如果因為網域或認證設定拋出異常，接住並直接連線 Firestore
+                // 嘗試進行匿名身份驗證，若因網域授權未設定拋出異常時優雅接住，繼續嘗試連接 Firestore
                 try {
                     if (typeof __initial_auth_token !== 'undefined') {
                         await signInWithCustomToken(auth, __initial_auth_token);
@@ -771,12 +771,12 @@
                         await signInAnonymously(auth);
                     }
                 } catch (authErr) {
-                    console.warn("Firebase Auth bypassed, proceeding to Firestore:", authErr);
+                    console.warn("Firebase Auth Notice (proceeding to Firestore):", authErr);
                 }
 
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'roster_state');
                 
-                // 直連 Firestore 資料庫
+                // 訂閱 Firestore 雲端資料庫變更
                 onSnapshot(docRef, (docSnap) => {
                     if (statusEl) {
                         statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
@@ -823,7 +823,7 @@
                 console.warn("Cloud sync initialization fallback to local storage:", err);
                 if (statusEl) {
                     statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常`;
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線失敗`;
                 }
             }
         }
