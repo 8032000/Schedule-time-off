@@ -725,19 +725,33 @@
 
     <!-- Firebase Cloud Sync Script -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'pchome-roster-app';
-        let customFirebaseConfig = localStorage.getItem('custom_firebase_config');
         
+        // 預設寫入您的 Firebase 專案金鑰 (schedule-time-off)
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyAST35xy8caDPmXU_Y3tKWMY-DSwJ5YPdM",
+            authDomain: "schedule-time-off.firebaseapp.com",
+            projectId: "schedule-time-off",
+            storageBucket: "schedule-time-off.firebasestorage.app",
+            messagingSenderId: "343728866805",
+            appId: "1:343728866805:web:c2cb0d1b250f30ee6b8cbc",
+            measurementId: "G-JZZRH50S1C"
+        };
+
+        let customFirebaseConfig = localStorage.getItem('custom_firebase_config');
         let firebaseConfig = null;
         if (customFirebaseConfig) {
             try { firebaseConfig = JSON.parse(customFirebaseConfig); } catch(e) {}
         }
         if (!firebaseConfig && typeof __firebase_config !== 'undefined') {
             try { firebaseConfig = JSON.parse(__firebase_config); } catch(e) {}
+        }
+        if (!firebaseConfig) {
+            firebaseConfig = defaultFirebaseConfig;
         }
 
         let db = null;
@@ -759,7 +773,7 @@
             }
 
             try {
-                const app = initializeApp(firebaseConfig);
+                const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
                 db = getFirestore(app);
                 const auth = getAuth(app);
 
@@ -802,11 +816,16 @@
                 }, (error) => {
                     console.warn("Cloud sync listening notice:", error);
                     if (statusEl) {
-                        statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端權限不足`;
+                        statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 cursor-pointer";
+                        statusEl.title = `Firestore 錯誤: ${error.message}`;
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端權限不足/資料庫未建立`;
+                    }
+                    if (settingsBadge) {
+                        settingsBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-red-100 text-red-800 border border-red-300";
+                        settingsBadge.innerText = "🔴 雲端權限不足/資料庫未建立";
                     }
                     if (typeof showToast === 'function') {
-                        showToast('⚠️ 請至 Firebase 控制台開啟「Firestore Database ➔ 規則 Rules」設為 allow read, write: if true;', 'error');
+                        showToast('⚠️ 請至 Firebase 控制台：1. 點擊「Firestore Database」建立資料庫 2. 在「規則 Rules」設為 allow read, write: if true;', 'error');
                     }
                 });
 
@@ -820,10 +839,18 @@
                 };
 
             } catch (err) {
-                console.warn("Cloud sync initialization fallback to local storage:", err);
+                console.warn("Cloud sync initialization error:", err);
                 if (statusEl) {
-                    statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常`;
+                    statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 cursor-pointer";
+                    statusEl.title = `初始化錯誤: ${err.message}`;
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常 (${err.message || '初始化失敗'})`;
+                }
+                if (settingsBadge) {
+                    settingsBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-red-100 text-red-800 border border-red-300";
+                    settingsBadge.innerText = `🔴 雲端連線異常 (${err.message || '初始化失敗'})`;
+                }
+                if (typeof showToast === 'function') {
+                    showToast(`⚠️ 雲端初始化失敗：${err.message}，請確認 Firebase 設定。`, 'error');
                 }
             }
         }
