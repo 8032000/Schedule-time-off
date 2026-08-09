@@ -7,35 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f8fafc;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9; 
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        table td, table th { text-align: center; vertical-align: middle; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navigation Header -->
+    <!-- Top Navigation Bar -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -43,7 +25,7 @@
                     <svg class="w-7 h-7 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <span class="text-xl font-bold tracking-tight"><span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-400">PChome</span> <span class="text-slate-900">撿出早班班表</span></span>
+                    <span class="text-xl font-bold tracking-tight"><span class="text-red-600">PChome</span> <span class="text-slate-900">撿出早班班表</span></span>
                     <span id="cloud-sync-status" class="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
                         <span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>🟡 連線嘗試中...
                     </span>
@@ -51,233 +33,74 @@
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <button onclick="window.switchView('employee')" id="nav-employee" class="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-indigo-50 text-indigo-700">員工劃休區</button>
                     <button onclick="window.switchView('admin')" id="nav-admin" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-600 hover:bg-slate-100">管理員總表</button>
-                    <button onclick="window.handleLogout()" id="nav-logout" class="hidden px-3 py-2 rounded-md text-sm font-medium transition-colors bg-red-50 text-red-600 border border-red-200 hover:bg-red-100">登出管理員</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Workspace Container -->
+    <!-- Main Content Space -->
     <main class="flex-1 w-full max-w-[1400px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
         
-        <!-- Employee Roster Submission View -->
+        <!-- Employee View -->
         <div id="employee-view" class="max-w-5xl mx-auto space-y-6">
-            <div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h2 class="text-lg font-semibold text-slate-800 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        排休作業
-                    </h2>
-                </div>
-                
-                <div class="p-6">
-                    <!-- Announcement Box -->
-                    <div id="employee-announcement" class="mb-6 bg-indigo-50/70 border border-indigo-200 rounded-xl p-4 flex items-start shadow-sm">
-                        <svg class="w-6 h-6 text-indigo-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                        <div class="w-full">
-                            <h3 class="text-sm font-bold text-indigo-900 mb-1">主管排班公告</h3>
-                            <p class="text-sm text-indigo-800 leading-relaxed" id="announcement-text">讀取中...</p>
-                        </div>
-                    </div>
-
-                    <!-- Employee Identification Fields -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                        <div class="relative">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">員工編號 (擇一輸入)</label>
-                            <input type="text" id="emp-id" oninput="window.clearOther('id')" onblur="window.handleEmpBlur('id')" placeholder="輸入後自動帶入" class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div class="relative">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">員工姓名 (擇一輸入)</label>
-                            <input type="text" id="emp-name" oninput="window.clearOther('name')" onblur="window.handleEmpBlur('name')" placeholder="輸入後自動帶入" class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">所屬班別 (系統帶入)</label>
-                            <input type="text" id="emp-shift" readonly placeholder="名單設定中抓取" class="w-full rounded-lg border-slate-300 border px-3 py-2 bg-slate-100 text-slate-500 outline-none cursor-not-allowed font-medium">
-                        </div>
-                    </div>
-
-                    <!-- Date Selection Inputs and Counters -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-4 bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
-                        <div>
-                            <label class="block text-sm font-bold text-emerald-700 mb-1 flex items-center justify-between">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-1.5"></span> 休假 (休)</span>
-                                <span id="count-rest" class="text-[10px] sm:text-xs bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-800 font-medium border border-emerald-200">已排 0 / 應排 0</span>
-                            </label>
-                            <input type="text" id="emp-rest-input" onblur="window.handleTypedDates()" onkeydown="if(event.key === 'Enter') window.handleTypedDates()" placeholder="例如: 5, 12" class="w-full text-sm rounded-lg border-emerald-300 border px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-emerald-900 bg-white shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-blue-700 mb-1 flex items-center justify-between">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-1.5"></span> 例假 (例)</span>
-                                <span id="count-reg" class="text-[10px] sm:text-xs bg-blue-100 px-1.5 py-0.5 rounded text-blue-800 font-medium border border-blue-200">已排 0 / 應排 0</span>
-                            </label>
-                            <input type="text" id="emp-regular-input" onblur="window.handleTypedDates()" onkeydown="if(event.key === 'Enter') window.handleTypedDates()" placeholder="例如: 6, 13" class="w-full text-sm rounded-lg border-blue-300 border px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-medium text-blue-900 bg-white shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-rose-700 mb-1 flex items-center justify-between">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-rose-500 mr-1.5"></span> 國定假日 (國)</span>
-                                <span id="count-nat" class="text-[10px] sm:text-xs bg-rose-100 px-1.5 py-0.5 rounded text-rose-800 font-medium border border-rose-200">已排 0 / 應排 0</span>
-                            </label>
-                            <input type="text" id="emp-national-input" onblur="window.handleTypedDates()" onkeydown="if(event.key === 'Enter') window.handleTypedDates()" placeholder="例如: 10" class="w-full text-sm rounded-lg border-rose-300 border px-3 py-2 focus:ring-2 focus:ring-rose-500 outline-none font-medium text-rose-900 bg-white shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-amber-700 mb-1 flex items-center justify-between">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 mr-1.5"></span> 年假/特休 (年)</span>
-                                <span id="count-ann" class="text-[10px] sm:text-xs bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 font-medium border border-amber-200">已排 0</span>
-                            </label>
-                            <input type="text" id="emp-annual-input" onblur="window.handleTypedDates()" onkeydown="if(event.key === 'Enter') window.handleTypedDates()" placeholder="例如: 22" class="w-full text-sm rounded-lg border-amber-300 border px-3 py-2 focus:ring-2 focus:ring-amber-500 outline-none font-medium text-amber-900 bg-white shadow-sm">
-                        </div>
-                    </div>
-
-                    <!-- Interactive Roster Calendar Grid -->
-                    <div class="mb-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                            <h3 class="text-md font-semibold text-slate-800" id="calendar-title">可排休日期</h3>
-                            <div class="text-[11px] sm:text-sm text-slate-600 flex flex-wrap gap-x-3 gap-y-2 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1"></span> 休假(點1下)</span>
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> 例假(點2下)</span>
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 mr-1"></span> 國定(點3下)</span>
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1"></span> 年假(點4下)</span>
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 mr-1 border border-slate-400"></span> 額滿不可排</span>
-                            </div>
-                        </div>
-
-                        <div id="calendar-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-3"></div>
-                    </div>
-
-                    <!-- Employee Remark and Submission -->
-                    <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
-                        <label class="block text-sm font-bold text-slate-700 mb-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            排休備註說明 (選填)
-                        </label>
-                        <p class="text-xs text-slate-500 mb-2">若有特定日期因故「務必」要排休，請在此填寫原因讓主管知悉。</p>
-                        <textarea id="emp-remark" rows="2" class="w-full rounded-lg border-slate-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white" placeholder="請填寫您的排休備註..."></textarea>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row sm:justify-between items-center pt-4 border-t border-slate-100 gap-3">
-                        <label class="flex items-center text-sm cursor-pointer group w-full sm:w-auto p-2 sm:p-0 rounded-lg sm:rounded-none bg-amber-50 sm:bg-transparent border border-amber-200 sm:border-transparent">
-                            <input type="checkbox" id="force-save-checkbox" class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 transition-colors ml-2 sm:ml-0">
-                            <span class="ml-2 font-bold text-amber-700 group-hover:text-amber-800">⚠️ 特殊情況強制放行 (未排滿天數或特殊班表交由主管排休)</span>
-                        </label>
-                        <button onclick="window.submitEmployeeLeave()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors flex justify-center items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            儲存排休設定
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Control View -->
-        <div id="admin-view" class="hidden space-y-6">
-            
-            <!-- Admin Sub-Navigation Tabs -->
-            <div class="flex justify-center mb-4">
-                <div class="bg-slate-100 p-1.5 rounded-full inline-flex flex-wrap shadow-inner w-full max-w-[1350px] gap-1">
-                    <button id="subnav-leaves" onclick="window.switchAdminSubView('leaves')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow-md transition-colors text-center whitespace-nowrap">
-                        👤 人員與人力整合主控表
-                    </button>
-                    <button id="subnav-qrcode" onclick="window.switchAdminSubView('qrcode')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        📱 掃碼排假/網址
-                    </button>
-                    <button id="subnav-manpower" onclick="window.switchAdminSubView('manpower')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        ⚙️ 變形工時與規則設定
-                    </button>
-                    <button id="subnav-special" onclick="window.switchAdminSubView('special')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        ⭐ 特殊崗位
-                    </button>
-                    <button id="subnav-roles" onclick="window.switchAdminSubView('roles')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        🎲 主管輪值
-                    </button>
-                    <button id="subnav-query" onclick="window.switchAdminSubView('query')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        🔍 貼上姓名帶出假別
-                    </button>
-                    <button id="subnav-logs" onclick="window.switchAdminSubView('logs')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        📋 異動紀錄
-                    </button>
-                    <button id="subnav-settings" onclick="window.switchAdminSubView('settings')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        📝 公告/名單設定
-                    </button>
-                    <button id="subnav-feiteng" onclick="window.switchAdminSubView('feiteng')" class="flex-1 py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-center whitespace-nowrap">
-                        ☁️ 飛騰匯出
-                    </button>
-                </div>
+            <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 shadow-sm">
+                <div class="font-bold text-sm mb-1">📢 主管排班公告與規範</div>
+                <p>⚠️ 排休規則：依勞基法實施「一週一例一休」 | 每週上限 <span class="font-bold text-red-600">2</span> 天 | 最多連上 <span class="font-bold text-red-600">6</span> 天</p>
             </div>
 
-            <!-- Subview 1: Leaves View (Master Schedule Matrix) -->
-            <div id="admin-subview-leaves" class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden flex flex-col h-[750px]">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 shrink-0">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <h2 class="text-base font-bold text-slate-900 flex items-center">👤 排休作業</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-800 flex items-center flex-wrap gap-2">
-                            <span>人員排班與各班別人力整合總表</span>
-                            <span class="text-xs bg-indigo-100 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full border border-indigo-200 flex items-center gap-1">
-                                📊 劃假人數: <span id="master-leave-count" class="font-extrabold text-indigo-900">0</span> 人
-                            </span>
-                        </h2>
-                        <p class="text-xs text-slate-500 font-medium mt-0.5">💡 點擊儲存格切換假別，對調挪動假別精準計算，即時同步至雲端資料庫！</p>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">員工編號 (擇一輸入)</label>
+                        <input type="text" id="emp-input-id" oninput="window.autoFillEmpName()" placeholder="輸入後自動帶入" class="w-full px-3.5 py-2.5 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="window.exportLeavesToCSV()" class="inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            匯出 CSV
-                        </button>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">員工姓名 (擇一輸入)</label>
+                        <input type="text" id="emp-input-name" placeholder="輸入後自動帶入" class="w-full px-3.5 py-2.5 border rounded-xl text-xs bg-slate-50 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">所屬班別 (系統帶入)</label>
+                        <input type="text" id="emp-input-shift" readonly placeholder="名單設定中自動帶入" class="w-full px-3.5 py-2.5 border rounded-xl text-xs bg-slate-50 text-slate-500 outline-none">
                     </div>
                 </div>
-                <div class="overflow-auto custom-scrollbar flex-1 bg-white relative p-2">
-                    <table class="min-w-full border-collapse border-0 w-max table-fixed">
-                        <thead id="admin-leaves-thead"></thead>
-                        <tbody id="admin-leaves-tbody" class="bg-white text-sm"></tbody>
-                    </table>
+
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold text-slate-700">📅 點擊日曆切換假別（點擊即可劃休）</h3>
+                    <div id="emp-calendar-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="window.submitEmployeeLeave()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all">
+                        💾 儲存排休設定
+                    </button>
                 </div>
             </div>
-
-            <!-- Other Subviews Placeholder for Smooth Switch -->
-            <div id="admin-subview-qrcode" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">📱 掃碼排假與網址分享</h2>
-                <input type="text" id="share-url-input" class="w-full rounded-lg border p-2 text-xs font-mono">
-                <img id="qr-code-img" src="" alt="QR Code" class="w-48 h-48 border p-2 rounded-lg">
-            </div>
-
-            <div id="admin-subview-manpower" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">⚙️ 變形工時與排班規則設定</h2>
-            </div>
-
-            <div id="admin-subview-special" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">⭐ 特殊崗位</h2>
-            </div>
-
-            <div id="admin-subview-roles" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">🎲 主管輪值</h2>
-            </div>
-
-            <div id="admin-subview-query" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">🔍 貼上姓名帶出假別</h2>
-                <textarea id="batch-query-input" rows="4" class="w-full p-2 border rounded text-xs"></textarea>
-            </div>
-
-            <div id="admin-subview-logs" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">📋 異動紀錄</h2>
-            </div>
-
-            <div id="admin-subview-settings" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">📝 公告與名單設定</h2>
-            </div>
-
-            <div id="admin-subview-feiteng" class="hidden bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                <h2 class="text-lg font-bold text-slate-800">☁️ 飛騰匯出</h2>
-            </div>
-
         </div>
+
+        <!-- Admin View -->
+        <div id="admin-view" class="hidden space-y-6">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <h2 class="text-base font-bold text-slate-900">人員排班與各班別人力整合總表</h2>
+                <button onclick="window.exportToCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm">📊 匯出 CSV 報表</button>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto custom-scrollbar">
+                <table class="min-w-full text-xs border-collapse">
+                    <thead>
+                        <tr id="roster-table-header" class="bg-slate-100 font-bold border-b border-slate-200"></tr>
+                    </thead>
+                    <tbody id="roster-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- Direct Connection Firebase Script (Completely Bypassing Auth & Strictly EVEN 2-Segment Path) -->
+    <!-- Firestore Fixed Direct Connection Script -->
     <script type="module">
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js?v=20260809";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js?v=20260809";
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAST35xy8caDPmXU_Y3tKWMY-DSwJ5YPdM",
@@ -297,13 +120,8 @@
                 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
                 db = getFirestore(app);
 
-                // 自動判斷：預覽平台 6 層，GitHub Pages 正式網址 2 層 (roster_state/current)
-                let docRef;
-                if (typeof __app_id !== 'undefined') {
-                    docRef = doc(db, 'artifacts', __app_id, 'public', 'data', 'roster_state', 'main');
-                } else {
-                    docRef = doc(db, 'roster_state', 'current');
-                }
+                // 固定標準 2 段偶數路徑：roster_state / current
+                const docRef = doc(db, 'roster_state', 'current');
                 
                 onSnapshot(docRef, (docSnap) => {
                     if (statusEl) {
@@ -314,23 +132,16 @@
                         window.applyStateFromCloud(docSnap.data());
                     }
                 }, (error) => {
-                    console.error("Firestore Direct Listen Error:", error);
-                    let errTip = "連線受阻";
-                    if (error.code === 'permission-denied') errTip = "Rules 權限未開放";
-
+                    console.error("Firestore Listen Fail:", error);
                     if (statusEl) {
                         statusEl.className = "ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
-                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常 (${errTip})`;
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>🔴 雲端連線異常 (${error.code})`;
                     }
                 });
 
                 window.cloudSave = async function(data) {
                     if (!db) return;
-                    try {
-                        await setDoc(docRef, data, { merge: true });
-                    } catch (e) {
-                        console.error("Cloud Save Fail:", e);
-                    }
+                    try { await setDoc(docRef, data, { merge: true }); } catch (e) { console.error("Cloud Save Failed:", e); }
                 };
 
             } catch (err) {
@@ -345,283 +156,134 @@
         initCloudSync();
     </script>
 
-    <!-- Complete Business Functions -->
+    <!-- Core App Logic -->
     <script>
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        
-        const formatDate = (date) => {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        };
-
-        const state = {
+        let state = {
             view: 'employee',
-            adminSubView: 'leaves',
-            leaves: [],
             empList: [
-                { title: '主管', id: '802509', name: '邱木樹', shift: '幹部' },
-                { title: '組員', id: '10393', name: '張仕育', shift: '早班' }
+                { id: '802509', name: '邱木樹', shift: '幹部', title: '主管' },
+                { id: '10393', name: '張仕育', shift: '早班', title: '組員' }
             ],
-            currentEmpId: '',
-            currentEmpName: '',
-            currentRestDates: [],
-            currentRegularDates: [],
-            currentNationalDates: [],
-            currentAnnualDates: [],
-            currentStartDate: formatDate(firstDay),
-            currentEndDate: formatDate(lastDay),
-            quotaStartDate: formatDate(firstDay),
-            rules: { maxPerWeek: 2, monthRest: 8, monthReg: 4, monthNat: 0, maxConsecutiveWorkDays: 6 },
-            logs: []
+            leaves: {},
+            currentEmpId: '802509'
         };
 
-        window.applyStateFromCloud = function(cloudData) {
-            if (cloudData.leaves) state.leaves = cloudData.leaves;
-            if (cloudData.empList) state.empList = cloudData.empList;
-            if (cloudData.rules) state.rules = cloudData.rules;
-
-            window.renderAnnouncement();
-            if (state.view === 'employee') {
-                renderCalendar();
-            } else {
-                window.switchAdminSubView(state.adminSubView);
-            }
+        window.switchView = function(view) {
+            state.view = view;
+            document.getElementById('employee-view').classList.toggle('hidden', view !== 'employee');
+            document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
+            if (view === 'admin') renderRosterTable();
+            else renderCalendar();
         };
 
-        window.getDatesInRange = function(startStr, endStr) {
-            const dateArray = [];
-            const sParts = startStr.split('-');
-            const eParts = endStr.split('-');
-            let currentDate = new Date(parseInt(sParts[0],10), parseInt(sParts[1],10)-1, parseInt(sParts[2],10));
-            const end = new Date(parseInt(eParts[0],10), parseInt(eParts[1],10)-1, parseInt(eParts[2],10));
-            while (currentDate <= end) {
-                dateArray.push(formatDate(currentDate));
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            return dateArray;
-        };
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if(!container) return;
-            const toast = document.createElement('div');
-            toast.className = `bg-indigo-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition-all duration-300 z-50`;
-            toast.innerHTML = `<span class="font-medium text-sm">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        window.renderAnnouncement = function() {
-            const textElement = document.getElementById('announcement-text');
-            if(textElement) {
-                textElement.innerHTML = `⚠️ <b>排休規則：</b> 依勞基法實施<b>「一週一例一休」</b> | 每週上限 <span class="text-rose-600 font-bold">${state.rules.maxPerWeek}</span> 天 | 最多連上 <span class="text-rose-600 font-bold">${state.rules.maxConsecutiveWorkDays || 6}</span> 天`;
-            }
-        };
-
-        window.switchView = function(viewName) {
-            state.view = viewName;
-            document.getElementById('employee-view').classList.toggle('hidden', viewName !== 'employee');
-            document.getElementById('admin-view').classList.toggle('hidden', viewName !== 'admin');
-            if (viewName === 'employee') {
-                window.renderAnnouncement(); renderCalendar();
-            } else {
-                window.switchAdminSubView(state.adminSubView);
-            }
-        };
-
-        window.switchAdminSubView = function(subView) {
-            state.adminSubView = subView;
-            ['leaves', 'qrcode', 'manpower', 'special', 'roles', 'query', 'logs', 'settings', 'feiteng'].forEach(v => {
-                const el = document.getElementById(`admin-subview-${v}`);
-                if (el) el.classList.add('hidden');
-                const btn = document.getElementById(`subnav-${v}`);
-                if (btn) btn.className = "flex-1 py-2 px-2 sm:px-3 rounded-full text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors text-center whitespace-nowrap";
-            });
-            const targetView = document.getElementById(`admin-subview-${subView}`);
-            if (targetView) targetView.classList.remove('hidden');
-            const targetBtn = document.getElementById(`subnav-${subView}`);
-            if (targetBtn) targetBtn.className = "flex-1 py-2 px-2 sm:px-3 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-md transition-colors text-center whitespace-nowrap";
-
-            if (subView === 'leaves') window.renderAdminLeaves();
-        };
-
-        window.clearOther = function(type) {
-            if (type === 'id') document.getElementById('emp-name').value = '';
-            else document.getElementById('emp-id').value = '';
-            document.getElementById('emp-shift').value = '';
-            state.currentEmpId = '';
-            state.currentRestDates = []; state.currentRegularDates = []; state.currentNationalDates = []; state.currentAnnualDates = [];
-            window.syncDatesToInputs(); renderCalendar();
-        };
-
-        window.handleEmpBlur = function(type) {
-            const query = type === 'id' ? document.getElementById('emp-id').value.trim() : document.getElementById('emp-name').value.trim();
-            if (!query) return;
-            const emp = state.empList.find(e => type === 'id' ? e.id === query : e.name === query);
+        window.autoFillEmpName = function() {
+            const val = document.getElementById('emp-input-id').value.trim();
+            const emp = state.empList.find(e => e.id === val);
             if (emp) {
-                document.getElementById('emp-id').value = emp.id;
-                document.getElementById('emp-name').value = emp.name;
-                document.getElementById('emp-shift').value = emp.shift;
-                state.currentEmpId = emp.id; state.currentEmpName = emp.name;
-                
-                const existingLeave = state.leaves.find(l => l.empId === emp.id);
-                if (existingLeave) {
-                    state.currentRestDates = [...(existingLeave.restDates || [])];
-                    state.currentRegularDates = [...(existingLeave.regularDates || [])];
-                    state.currentNationalDates = [...(existingLeave.nationalDates || [])];
-                    state.currentAnnualDates = [...(existingLeave.annualDates || [])];
-                }
-                window.syncDatesToInputs(); renderCalendar();
-            } else { showToast('查無此員工，請確認名單', 'error'); }
-        };
-
-        window.syncDatesToInputs = function() {
-            const validDates = window.getDatesInRange(state.currentStartDate, state.currentEndDate);
-            const formatForInput = (dates) => dates.filter(d => validDates.includes(d)).map(dStr => `${parseInt(dStr.split('-')[1], 10)}/${parseInt(dStr.split('-')[2], 10)}`).join(', ');
-            
-            document.getElementById('emp-rest-input').value = formatForInput(state.currentRestDates);
-            document.getElementById('emp-regular-input').value = formatForInput(state.currentRegularDates);
-            document.getElementById('emp-national-input').value = formatForInput(state.currentNationalDates);
-            document.getElementById('emp-annual-input').value = formatForInput(state.currentAnnualDates);
+                document.getElementById('emp-input-name').value = emp.name;
+                document.getElementById('emp-input-shift').value = emp.shift;
+                state.currentEmpId = emp.id;
+                renderCalendar();
+            }
         };
 
         function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            if(!grid) return; grid.innerHTML = '';
-            const dates = window.getDatesInRange(state.currentStartDate, state.currentEndDate);
-            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            const grid = document.getElementById('emp-calendar-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            for (let i = 1; i <= 31; i++) {
+                const dayStr = i < 10 ? `0${i}` : `${i}`;
+                const key = `${state.currentEmpId}_2026-08-${dayStr}`;
+                const leaveVal = state.leaves[key] || '';
 
-            dates.forEach(dateStr => {
-                const parts = dateStr.split('-');
-                const d = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
-                
-                const isRest = state.currentRestDates.includes(dateStr);
-                const isReg = state.currentRegularDates.includes(dateStr);
-                const isNat = state.currentNationalDates.includes(dateStr);
-                const isAnn = state.currentAnnualDates.includes(dateStr);
-
-                const btn = document.createElement('button');
-                btn.className = `flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl border-2 transition-all relative overflow-hidden ${
-                    isRest ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-bold' :
-                    isReg ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' :
-                    isNat ? 'border-rose-500 bg-rose-50 text-rose-700 font-bold' :
-                    isAnn ? 'border-amber-500 bg-amber-50 text-amber-900 font-bold' :
-                    'border-slate-200 bg-white hover:border-indigo-300 text-slate-700'
-                }`;
-                btn.innerHTML = `
-                    <span class="text-xs font-bold text-slate-500">${parts[1]}/${parts[2]}</span>
-                    <span class="text-lg font-extrabold mt-0.5">${dayNames[d.getDay()]}</span>
-                `;
-                btn.onclick = () => window.toggleDate(dateStr);
+                const btn = document.createElement('div');
+                btn.className = `p-3 border rounded-xl text-center font-bold text-xs cursor-pointer transition-all ${leaveVal ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-white text-slate-700 hover:border-indigo-300'}`;
+                btn.onclick = () => {
+                    if (state.leaves[key]) delete state.leaves[key];
+                    else state.leaves[key] = '休';
+                    renderCalendar();
+                };
+                btn.innerHTML = `<div>8/${i}</div><div class="text-[10px] mt-1">${leaveVal || '上班'}</div>`;
                 grid.appendChild(btn);
+            }
+        }
+
+        function renderRosterTable() {
+            const tbody = document.getElementById('roster-table-body');
+            const theadRow = document.getElementById('roster-table-header');
+            if (!tbody || !theadRow) return;
+
+            let headerHtml = `
+                <th class="p-2 border-r min-w-[60px]">職稱</th>
+                <th class="p-2 border-r min-w-[70px]">員編</th>
+                <th class="p-2 border-r min-w-[80px]">姓名</th>
+                <th class="p-2 border-r min-w-[60px]">班別</th>
+                <th class="p-2 border-r min-w-[110px]">劃休天數</th>
+            `;
+            for (let i = 1; i <= 31; i++) headerHtml += `<th class="p-2 border-r min-w-[36px]">8/${i}</th>`;
+            theadRow.innerHTML = headerHtml;
+
+            tbody.innerHTML = '';
+            state.empList.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-slate-50";
+
+                let offCount = 0;
+                let dateCols = '';
+                for (let i = 1; i <= 31; i++) {
+                    const dayStr = i < 10 ? `0${i}` : `${i}`;
+                    const key = `${emp.id}_2026-08-${dayStr}`;
+                    const leaveVal = state.leaves[key] || '';
+                    if (leaveVal) offCount++;
+
+                    dateCols += `<td class="p-2 border-r font-bold ${leaveVal ? 'bg-emerald-100 text-emerald-800' : ''}">${leaveVal}</td>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-2 border-r text-red-600 font-bold">${emp.title || ''}</td>
+                    <td class="p-2 border-r font-mono">${emp.id}</td>
+                    <td class="p-2 border-r font-bold">${emp.name}</td>
+                    <td class="p-2 border-r">${emp.shift}</td>
+                    <td class="p-2 border-r text-slate-500">${offCount} 天</td>
+                    ${dateCols}
+                `;
+                tbody.appendChild(tr);
             });
         }
 
-        window.toggleDate = function(dateStr) {
-            if (!state.currentEmpId) { showToast('請先輸入並帶入員工資料', 'error'); return; }
-            const idx = state.currentRestDates.indexOf(dateStr);
-            if (idx > -1) state.currentRestDates.splice(idx, 1);
-            else state.currentRestDates.push(dateStr);
-            window.syncDatesToInputs(); renderCalendar();
-        };
-
         window.submitEmployeeLeave = function() {
-            if (!state.currentEmpId) { showToast('請先完成員工識別', 'error'); return; }
-            
-            let leaveRecord = state.leaves.find(l => l.empId === state.currentEmpId);
-            if (!leaveRecord) {
-                leaveRecord = { empId: state.currentEmpId, name: state.currentEmpName, shift: document.getElementById('emp-shift').value };
-                state.leaves.push(leaveRecord);
-            }
-            leaveRecord.restDates = [...state.currentRestDates];
-            leaveRecord.regularDates = [...state.currentRegularDates];
-            leaveRecord.nationalDates = [...state.currentNationalDates];
-            leaveRecord.annualDates = [...state.currentAnnualDates];
-
-            window.saveLocal();
-            showToast('排休設定已成功儲存並同步至雲端！', 'success');
+            if (window.cloudSave) window.cloudSave(state);
+            alert('已成功儲存劃休資料並同步至 Firebase 雲端！');
         };
 
-        window.saveLocal = function() {
-            const dataToSave = { leaves: state.leaves, empList: state.empList, rules: state.rules };
-            localStorage.setItem('MonthlyRosterSystemData', JSON.stringify(dataToSave));
-            if (typeof window.cloudSave === 'function') {
-                window.cloudSave(dataToSave);
-            }
-        };
-
-        window.renderAdminLeaves = function() {
-            const thead = document.getElementById('admin-leaves-thead');
-            const tbody = document.getElementById('admin-leaves-tbody');
-            if(!thead || !tbody) return;
-
-            const dates = window.getDatesInRange(state.currentStartDate, state.currentEndDate);
-            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
-
-            let dateRow = `<tr>
-                <th class="p-2 border font-bold min-w-[50px]">職稱</th>
-                <th class="p-2 border font-bold min-w-[60px]">員編</th>
-                <th class="p-2 border font-bold min-w-[70px]">姓名</th>
-                <th class="p-2 border font-bold min-w-[60px]">班別</th>
-                <th class="p-2 border font-bold min-w-[90px]">劃休天數</th>
-            `;
-            dates.forEach(d => {
-                const parts = d.split('-');
-                const dObj = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
-                dateRow += `<th class="p-1 border w-[38px] text-center text-xs bg-slate-100">${parts[2]}<br>${dayNames[dObj.getDay()]}</th>`;
-            });
-            dateRow += `</tr>`;
-            thead.innerHTML = dateRow;
-
-            let tbodyHtml = '';
-            state.empList.forEach(emp => {
-                const l = state.leaves.find(leave => leave.empId === emp.id) || { restDates: [], regularDates: [], nationalDates: [], annualDates: [] };
-                tbodyHtml += `<tr class="hover:bg-amber-50 text-center">
-                    <td class="p-1 border text-rose-700 font-bold">${emp.title || ''}</td>
-                    <td class="p-1 border font-mono">${emp.id}</td>
-                    <td class="p-1 border font-bold text-blue-700">${emp.name}</td>
-                    <td class="p-1 border">${emp.shift}</td>
-                    <td class="p-1 border font-bold text-purple-900">${(l.restDates||[]).length} 天</td>
-                `;
-
-                dates.forEach(dateStr => {
-                    let content = '';
-                    if ((l.restDates||[]).includes(dateStr)) content = `<span class="text-emerald-600 font-extrabold">休</span>`;
-                    else if ((l.regularDates||[]).includes(dateStr)) content = `<span class="text-blue-600 font-extrabold">例</span>`;
-                    tbodyHtml += `<td class="p-1 border">${content}</td>`;
-                });
-                tbodyHtml += `</tr>`;
-            });
-            tbody.innerHTML = tbodyHtml;
-        };
-
-        window.exportLeavesToCSV = function() {
+        window.exportToCSV = function() {
             let csv = '\uFEFF員編,姓名,班別,日期,假別\n';
             state.empList.forEach(emp => {
-                const l = state.leaves.find(leave => leave.empId === emp.id) || { restDates: [] };
-                const dates = window.getDatesInRange(state.currentStartDate, state.currentEndDate);
-                dates.forEach(dStr => {
-                    const isOff = (l.restDates||[]).includes(dStr);
-                    csv += `${emp.id},${emp.name},${emp.shift},${dStr},${isOff ? '休假' : '上班'}\n`;
-                });
+                for (let i = 1; i <= 31; i++) {
+                    const dayStr = i < 10 ? `0${i}` : `${i}`;
+                    const leaveVal = state.leaves[`${emp.id}_2026-08-${dayStr}`] || '上班';
+                    csv += `${emp.id},${emp.name},${emp.shift},2026-08-${dayStr},${leaveVal}\n`;
+                }
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `PChome_Roster_Master.csv`;
+            a.download = `PChome班表報表_2026-08.csv`;
             a.click();
             URL.revokeObjectURL(url);
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            window.renderAnnouncement();
-            renderCalendar();
-        });
+        window.applyStateFromCloud = function(cloudData) {
+            if (cloudData) {
+                if (cloudData.leaves) state.leaves = cloudData.leaves;
+                if (cloudData.empList) state.empList = cloudData.empList;
+                renderCalendar();
+                if (state.view === 'admin') renderRosterTable();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => { renderCalendar(); });
     </script>
 </body>
 </html>
